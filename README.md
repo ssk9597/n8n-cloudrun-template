@@ -45,11 +45,6 @@
 ---
 
 ## ⚡️ このあとの手順
-### バケットの作成
-最初に `terraform` の設定ファイル（状態）を保存するための Cloud Storage バケットを作ります。
-```bash
-./setup-backend.sh
-```
 ### GCP 側
 1. GCP でプロジェクトを作成
 2. 以下の API を有効化
@@ -60,7 +55,13 @@
 `.env` ファイル内の下記2行を自分のプロジェクトに合わせて書き換えてください。
 ```bash
 export PROJECT_ID="あなたのGCPプロジェクトID"
-export TF_BACKEND_BUCKET="先ほど作成したバケットIDを入力する"
+```
+
+### バケットの作成
+`terraform` の設定ファイル（状態）を保存するための Cloud Storage バケットを作ります。
+```bash
+source .env
+./setup-backend.sh
 ```
 
 ### Supabase 側

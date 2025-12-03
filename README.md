@@ -84,10 +84,8 @@ task setup-backend
 task deploy-all
 
 # 個別実施
-task plan-secrets
-task plan-app
-task deploy-secrets
-task deploy-app
+task deploy-secrets-auto
+task deploy-app-auto
 ```
 ---
 ## 🌐 n8n にアクセス

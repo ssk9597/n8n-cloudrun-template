@@ -1,0 +1,22 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# Environment variables
+.envrc
+
+# Service account keys
+service-account-key.json
+*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+lifecycle.json

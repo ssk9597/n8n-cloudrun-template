@@ -112,5 +112,5 @@ tasks:
   destroy-all:
     desc: "全て削除（n8n → Supabase）"
     cmds:
-    - task: destroy-app
+      - task: destroy-app
       - task: destroy-secrets

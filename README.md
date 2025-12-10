@@ -57,13 +57,6 @@
 export PROJECT_ID="あなたのGCPプロジェクトID"
 ```
 
-### バケットの作成
-`terraform` の設定ファイル（状態）を保存するための Cloud Storage バケットを作ります。
-```bash
-source .env
-./setup-backend.sh
-```
-
 ### Supabase 側
 1. Supabase でプロジェクトを作成
 2. Table を作成
@@ -80,6 +73,9 @@ initial_db_password = "パスワード"
 
 ```bash
 source .env
+gcloud auth application-default login
+unset GOOGLE_APPLICATION_CREDENTIALS
+task setup-backend
 ```
 
 2. n8nの環境を作成する
@@ -88,10 +84,8 @@ source .env
 task deploy-all
 
 # 個別実施
-task plan-secrets
-task plan-app
-task deploy-secrets
-task deploy-app
+task deploy-secrets-auto
+task deploy-app-auto
 ```
 ---
 ## 🌐 n8n にアクセス

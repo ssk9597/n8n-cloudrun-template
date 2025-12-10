@@ -4,7 +4,7 @@ version: "3"
 vars:
   # バケット名（.envで設定したものを使う）
   BACKEND_BUCKET:
-    sh: "echo ${TF_BACKEND_BUCKET}"
+    sh: grep "TF_BACKEND_BUCKET" .env | cut -d '=' -f2 | tr -d '"' | tr -d ' '
 
 # ========= タスク一覧 =========
 tasks:
@@ -84,9 +84,9 @@ tasks:
   deploy-all:
     desc: "一発デプロイ（setup-backend → deploy 全自動）"
     cmds:
-    - task: setup-backend
-    - task: deploy-secrets-auto
-    - task: deploy-app-auto
+      - task: setup-backend
+      - task: deploy-secrets-auto
+      - task: deploy-app-auto
 
   # n8n 構成を削除（確認あり）
   destroy-app:
@@ -112,5 +112,5 @@ tasks:
   destroy-all:
     desc: "全て削除（n8n → Supabase）"
     cmds:
-    - task: destroy-app
+      - task: destroy-app
       - task: destroy-secrets

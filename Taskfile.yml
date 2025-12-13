@@ -1,58 +1,62 @@
 version: "3"
 
-# ========= 変数 =========
 vars:
-  # バケット名（.envで設定したものを使う）
   BACKEND_BUCKET:
     sh: grep "TF_BACKEND_BUCKET" .env | cut -d '=' -f2 | tr -d '"' | tr -d ' '
 
-# ========= タスク一覧 =========
 tasks:
-  # 初期設定（バケット作成と terraform init）
   setup-backend:
     desc: "最初の準備：バケット作成 + Terraform 初期化"
     cmds:
-      - ./setup-backend.sh # バケットを作成
+      - ./setup-backend.sh
+
       - |
-        terraform -chdir=secrets init \
-          -backend-config="bucket={{.BACKEND_BUCKET}}" \
+        echo "🧹 Cleaning up old terraform cache..."
+        rm -rf secrets/.terraform secrets/.terraform.lock.hcl
+
+        NEW_BUCKET=$(grep "^export TF_BACKEND_BUCKET" .env | sed 's/#.*$//' | grep -o '"[^"]*"' | tr -d '"')
+
+        echo "🚀 Initializing secrets with bucket: $NEW_BUCKET"
+        terraform -chdir=secrets init -reconfigure \
+          -backend-config="bucket=$NEW_BUCKET" \
           -backend-config="prefix=n8n-secrets"
+
       - |
-        terraform -chdir=project init \
-          -backend-config="bucket={{.BACKEND_BUCKET}}" \
+        echo "🧹 Cleaning up old terraform cache..."
+        rm -rf project/.terraform project/.terraform.lock.hcl
+
+        NEW_BUCKET=$(grep "^export TF_BACKEND_BUCKET" .env | sed 's/#.*$//' | grep -o '"[^"]*"' | tr -d '"')
+
+        echo "🚀 Initializing project with bucket: $NEW_BUCKET"
+        terraform -chdir=project init -reconfigure \
+          -backend-config="bucket=$NEW_BUCKET" \
           -backend-config="prefix=n8n"
 
-  # Supabase 情報（secrets）を plan
   plan-secrets:
     desc: "Supabase 情報の変更確認（plan）"
     cmds:
       - terraform -chdir=secrets plan -var-file=terraform.tfvars
 
-  # n8n本体の構成（project）を plan
   plan-app:
     desc: "n8n アプリ構成の変更確認（plan）"
     cmds:
       - terraform -chdir=project plan
 
-  # Supabase 情報（secrets）を apply（手動確認あり）
   deploy-secrets:
     desc: "Supabase 情報のデプロイ（確認あり）"
     cmds:
       - terraform -chdir=secrets apply -var-file=terraform.tfvars
 
-  # Supabase 情報を apply（確認なしで自動実行）
   deploy-secrets-auto:
     desc: "Supabase 情報のデプロイ（自動実行）"
     cmds:
       - terraform -chdir=secrets apply -auto-approve -var-file=terraform.tfvars
 
-  # n8n構成を apply（Cloud Run のURLを自動反映）
   deploy-app:
     desc: "n8n アプリのデプロイ（確認あり）＋URL再設定"
     cmds:
       - terraform -chdir=project apply
       - |
-        # URL を取得して再 apply
         URL=$(terraform -chdir=project output -raw service_url 2>/dev/null || true); \
         if echo "$URL" | grep -E '^https?://' >/dev/null; then \
           HOST=${URL#https://}; HOST=${HOST#http://}; \
@@ -63,13 +67,11 @@ tasks:
           echo "Cloud Run のURLが見つからないのでスキップします"; \
         fi
 
-  # n8n構成を apply（確認なしで自動実行）
   deploy-app-auto:
     desc: "n8n アプリのデプロイ（自動実行）＋URL反映"
     cmds:
       - terraform -chdir=project apply -auto-approve
       - |
-        # URL を取得して再 apply（自動）
         URL=$(terraform -chdir=project output -raw service_url 2>/dev/null || true); \
         if echo "$URL" | grep -E '^https?://' >/dev/null; then \
           HOST=${URL#https://}; HOST=${HOST#http://}; \
@@ -80,7 +82,6 @@ tasks:
           echo "Cloud Run のURLが見つからないのでスキップします"; \
         fi
 
-  # 一括デプロイ（初期化からapplyまで全自動）
   deploy-all:
     desc: "一発デプロイ（setup-backend → deploy 全自動）"
     cmds:
@@ -88,7 +89,6 @@ tasks:
       - task: deploy-secrets-auto
       - task: deploy-app-auto
 
-  # n8n 構成を削除（確認あり）
   destroy-app:
     desc: "n8n アプリの構成を削除"
     cmds:
@@ -98,7 +98,6 @@ tasks:
           -backend-config="prefix=n8n"
       - terraform -chdir=project destroy
 
-  # Supabase 情報を削除（確認あり）
   destroy-secrets:
     desc: "Supabase 情報を削除"
     cmds:
@@ -108,7 +107,6 @@ tasks:
           -backend-config="prefix=n8n-secrets"
       - terraform -chdir=secrets destroy -var-file=terraform.tfvars
 
-  # 全部まとめて削除（n8n → Supabase の順）
   destroy-all:
     desc: "全て削除（n8n → Supabase）"
     cmds:

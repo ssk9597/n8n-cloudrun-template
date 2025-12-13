@@ -14,7 +14,7 @@ terraform {
 
   # Backend config is supplied via `terraform init -backend-config` flags
   backend "gcs" {
-    bucket = "hiroaki-u-terraform-state"
+    bucket = "ryo-sasaki-terraform-state"
     prefix = "n8n"
   }
 }

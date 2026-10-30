@@ -23,8 +23,8 @@ module "app" {
   project_id = var.project_id
   region     = var.region
 
-  n8n_image   = var.n8n_image
-  cpu_limit   = var.cpu_limit
+  n8n_image     = var.n8n_image
+  cpu_limit     = var.cpu_limit
   memory_limit  = var.memory_limit
   min_instances = var.min_instances
   max_instances = var.max_instances

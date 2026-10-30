@@ -19,7 +19,7 @@ variable "service_name" {
 variable "n8n_image" {
   description = "Docker image for n8n"
   type        = string
-  default     = "n8nio/n8n:latest"
+  default     = "n8nio/n8n:2.46.3"
 }
 
 variable "cpu_limit" {
